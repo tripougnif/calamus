@@ -55,6 +55,7 @@ class JsonLDSchemaOpts(SchemaOpts):
         super().__init__(meta, *args, **kwargs)
 
         self.rdf_type = getattr(meta, "rdf_type", None)
+        self.inherit_parent_types = getattr(meta, "inherit_parent_types", True)
         if not isinstance(self.rdf_type, list):
             self.rdf_type = [self.rdf_type] if self.rdf_type else []
         self.rdf_type = sorted(self.rdf_type)
@@ -71,12 +72,13 @@ class JsonLDSchemaMeta(SchemaMeta):
     def __new__(mcs, name, bases, attrs):
         klass = super().__new__(mcs, name, bases, attrs)
 
-        # Include rdf_type of all parent schemas
-        for base in bases:
-            if hasattr(base, "opts"):
-                rdf_type = getattr(base.opts, "rdf_type", [])
-                if rdf_type:
-                    klass.opts.rdf_type.extend(rdf_type)
+        if klass.opts.inherit_parent_types:
+            # Include rdf_type of all parent schemas
+            for base in bases:
+                if hasattr(base, "opts"):
+                    rdf_type = getattr(base.opts, "rdf_type", [])
+                    if rdf_type:
+                        klass.opts.rdf_type.extend(rdf_type)
 
         klass.opts.rdf_type = sorted(set(klass.opts.rdf_type))
 
@@ -563,7 +565,7 @@ class JsonLDAnnotation(type):
 
         attribute_dict = {}
         for attr_name, value in namespace.copy().items():
-            if isinstance(value, fields._JsonLDField):
+            if isinstance(value, fields._JsonLDField) or hasattr(value, "__marshmallow_hook__"):
                 attribute_dict[attr_name] = value
 
                 if hasattr(value, "default"):
@@ -577,7 +579,12 @@ class JsonLDAnnotation(type):
         if "Meta" not in namespace or not hasattr(namespace["Meta"], "rdf_type"):
             raise ValueError("Setting 'rdf_type' on the `class Meta` is required for calamus annotations")
 
-        attribute_dict["Meta"] = type("Meta", (), {"rdf_type": namespace["Meta"].rdf_type})
+        meta_attr_dict = {}
+        for attr_name, value in namespace["Meta"].__dict__.items():
+            if not attr_name.startswith('_'):
+                meta_attr_dict[attr_name] = value
+
+        attribute_dict["Meta"] = type("Meta", (), meta_attr_dict)
         namespace["__calamus_schema__"] = type(f"{name}Schema", base_schemas, attribute_dict)
 
         @lru_cache(maxsize=5)
