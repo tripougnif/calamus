@@ -18,6 +18,33 @@
 Changes
 =======
 
+`0.4.2 <https://github.com/SwissDataScienceCenter/calamus/compare/v0.4.1...v0.4.2>`__ (2023-02-28)
+--------------------------------------------------------------------------------------------------
+
+Fixes
+~~~~~~~~
+
+- Fix IRI serialization when ``add_value_types`` is ``True``.
+
+`0.4.1 <https://github.com/SwissDataScienceCenter/calamus/compare/v0.4.0...v0.4.1>`__ (2022-09-01)
+--------------------------------------------------------------------------------------------------
+
+Fixes
+~~~~~~~~
+
+- Remove usage of fields deprecated by marshmallow and don't forward calamus specific fields to
+  prevent warnings.
+
+`0.4.0 <https://github.com/SwissDataScienceCenter/calamus/compare/v0.3.14...v0.4.0>`__ (2022-04-05)
+---------------------------------------------------------------------------------------------------
+
+Features
+~~~~~~~~
+
+- Add support for marshmallow Meta properties on annotated classes (such as ``exclude``).
+- Allow controlling ``rdf_type`` inheritance on annotated classes using the ``inherit_parent_types`` Boolean flag.
+- Support defining marshmallow hooks on annotated classes.
+
 `0.3.14 <https://github.com/SwissDataScienceCenter/calamus/compare/v0.3.13...v0.3.14>`__ (2022-03-23)
 -----------------------------------------------------------------------------------------------------
 
